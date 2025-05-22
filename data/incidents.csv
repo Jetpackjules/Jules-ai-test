@@ -1,0 +1,3 @@
+id,title,post_date,incident_time_approx,address_string,latitude,longitude,summary_text,source_url
+1,Sample Incident 1,2024-05-01,10:00 AM,"123 Sample St, Seattle, WA",,,This is a placeholder for the summary of sample incident 1,https://emergency.uw.edu/example1
+2,Sample Incident 2,2024-05-02,02:30 PM,"456 University Ave, Seattle, WA",,,This is a placeholder for the summary of sample incident 2,https://emergency.uw.edu/example2
