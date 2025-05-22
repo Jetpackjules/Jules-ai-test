@@ -84,6 +84,64 @@ The application will start, and you should see output indicating it's running (e
 
 Open your web browser and navigate to `http://127.0.0.1:5000/` (or the address shown in your terminal) to view the incident map.
 
+## Fetching New Incidents (Hypothetical Feature)
+
+The web interface includes a "Fetch New Incidents" button. This feature is designed to automate the process of updating the incident data. Clicking this button is intended to:
+
+1.  Attempt to fetch new incident reports from the UW Alert Blog's RSS feed (`https://emergency.uw.edu/feed/`).
+2.  Parse these reports and add any new, unique incidents to the `data/incidents.csv` file.
+3.  Automatically geocode the addresses of these newly added incidents to get their latitude and longitude.
+4.  Refresh the map display to include these new incidents.
+
+### **Crucial Disclaimer: `robots.txt` and Live Data Fetching**
+
+**The "Fetch New Incidents" feature WILL NOT ACTUALLY FETCH LIVE DATA from the UW Alert Blog in the current operational environment of this application.**
+
+This is because:
+*   The underlying tool used by this application for fetching external web content (`view_text_website`) strictly adheres to `robots.txt` files. These files specify rules for web crawlers and automated agents.
+*   The `robots.txt` file for `emergency.uw.edu` (the source of the RSS feed) currently **disallows** access to the `/feed/` path for automated agents. You can typically view this at `https://emergency.uw.edu/robots.txt`.
+*   As a result, any attempt by the application to fetch `https://emergency.uw.edu/feed/` will be blocked by the `view_text_website` tool, respecting the site owner's policy.
+
+This feature was implemented based on a user request to build the functionality *as if* `robots.txt` allowed access. This was done for demonstration purposes and for potential future use, should the `robots.txt` policy of the UW Alert Blog change to permit access to the RSS feed.
+
+When the "Fetch New Incidents" button is clicked:
+*   The application will attempt to initiate the fetching process.
+*   However, the `app/rss_fetcher.py` module, which handles the RSS feed interaction, is designed to anticipate and gracefully handle this fetch failure.
+*   It will log an error message indicating that the fetch was disallowed (or simulate this failure if direct net access for the tool is restricted in the dev environment) and will return no new data from the live feed.
+*   For development and testing of the subsequent parsing and geocoding logic, `rss_fetcher.py` might use placeholder or simulated data if explicitly configured to do so, but it will not bypass the `robots.txt` restriction for the live URL.
+
+### API Endpoint for Fetching Incidents
+
+The "Fetch New Incidents" button interacts with the following backend API endpoint:
+
+*   **Endpoint:** `POST /api/fetch-new-incidents`
+    *   **Method:** `POST`
+    *   **Description:** Triggers the process of attempting to fetch new incidents from the RSS feed, adding them to `data/incidents.csv`, geocoding them, and preparing them for map display.
+    *   **Request Body:** None.
+    *   **Success Response (Example):**
+        ```json
+        {
+            "status": "success",
+            "message": "Processing complete. Appended: 0 new incidents. Geocoded/Updated: 0 incidents.",
+            "new_incidents_appended": 0,
+            "incidents_geocoded_or_updated": 0,
+            "details": {
+                "appended": 0,
+                "geocoded_processed": 0,
+                "geocoded_updated": 0
+            }
+        }
+        ```
+        *(Note: In the current setup, `new_incidents_appended` will typically be `0` due to the `robots.txt` restriction explained above.)*
+    *   **Error Response (Example):**
+        ```json
+        {
+            "status": "error",
+            "message": "An unexpected error occurred: [error details]"
+        }
+        ```
+    *   **Important Note:** The `robots.txt` limitation described above directly impacts this API endpoint. It will not be able to fetch live data from the specified RSS feed.
+
 ## Future Enhancements
 Potential improvements for this project include:
 
